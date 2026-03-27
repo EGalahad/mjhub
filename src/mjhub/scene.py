@@ -71,8 +71,10 @@ def temp_mjcf_with_floor(
     *,
     ground_rgb: tuple[float, float, float] = DEFAULT_GROUND_RGB,
 ) -> Path:
-    resolved_path = Path(mjcf_path).expanduser().resolve()
-    xml_text = resolved_path.read_text(encoding="utf-8")
+    source_path = Path(mjcf_path).expanduser()
+    if not source_path.is_absolute():
+        source_path = source_path.absolute()
+    xml_text = source_path.read_text(encoding="utf-8")
     viewer_xml = inject_floor_scene_xml(xml_text, ground_rgb=ground_rgb)
 
     temp_path: Path | None = None
@@ -81,7 +83,7 @@ def temp_mjcf_with_floor(
             mode="w",
             suffix=".xml",
             prefix=".mjhub_scene_",
-            dir=resolved_path.parent,
+            dir=source_path.parent,
             delete=False,
             encoding="utf-8",
         ) as tmp:

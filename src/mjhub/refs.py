@@ -98,9 +98,9 @@ def resolve_mjcf_reference(
     if not mjcf_path.is_absolute():
         if local_root is not None:
             mjcf_path = Path(local_root).expanduser().resolve() / mjcf_path
-        mjcf_path = mjcf_path.resolve()
+        mjcf_path = mjcf_path.absolute()
     else:
-        mjcf_path = mjcf_path.resolve()
+        mjcf_path = mjcf_path.absolute()
 
     if not mjcf_path.is_file():
         raise FileNotFoundError(f"MJCF not found: {mjcf_path}")
