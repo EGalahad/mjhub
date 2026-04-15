@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Optional, Union
 
 from huggingface_hub import snapshot_download
 
@@ -85,7 +86,7 @@ def _resolve_huggingface_mjcf(reference: HuggingFaceMjcfRef) -> Path:
 def resolve_mjcf_reference(
     mjcf: MjcfReference,
     *,
-    local_root: str | Path | None = None,
+    local_root: Optional[Union[str, Path]] = None,
 ) -> Path:
     mjcf = _parse_mjcf_reference(mjcf)
 

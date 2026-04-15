@@ -4,6 +4,7 @@ import os
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
+from typing import Optional, Tuple, Union
 
 from mjhub.types import DEFAULT_GROUND_RGB
 
@@ -28,18 +29,21 @@ VIEWER_WORLDBODY_XML = """\
 """
 
 
-def _format_rgb(rgb: tuple[float, float, float]) -> str:
+Rgb = Tuple[float, float, float]
+
+
+def _format_rgb(rgb: Rgb) -> str:
     return " ".join(f"{channel:.3f}" for channel in rgb)
 
 
-def _scale_rgb(rgb: tuple[float, float, float], scale: float) -> tuple[float, float, float]:
+def _scale_rgb(rgb: Rgb, scale: float) -> Rgb:
     return tuple(min(max(channel * scale, 0.0), 1.0) for channel in rgb)
 
 
 def inject_floor_scene_xml(
     xml_text: str,
     *,
-    ground_rgb: tuple[float, float, float] = DEFAULT_GROUND_RGB,
+    ground_rgb: Rgb = DEFAULT_GROUND_RGB,
 ) -> str:
     ground_rgb_dark = _scale_rgb(ground_rgb, 0.75)
     viewer_asset_xml = VIEWER_ASSET_XML_TEMPLATE.format(
@@ -67,9 +71,9 @@ def inject_floor_scene_xml(
 
 @contextmanager
 def temp_mjcf_with_floor(
-    mjcf_path: str | Path,
+    mjcf_path: Union[str, Path],
     *,
-    ground_rgb: tuple[float, float, float] = DEFAULT_GROUND_RGB,
+    ground_rgb: Rgb = DEFAULT_GROUND_RGB,
 ) -> Path:
     source_path = Path(mjcf_path).expanduser()
     if not source_path.is_absolute():
@@ -77,7 +81,7 @@ def temp_mjcf_with_floor(
     xml_text = source_path.read_text(encoding="utf-8")
     viewer_xml = inject_floor_scene_xml(xml_text, ground_rgb=ground_rgb)
 
-    temp_path: Path | None = None
+    temp_path: Optional[Path] = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",

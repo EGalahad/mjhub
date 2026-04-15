@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Literal, TypeAlias, TypedDict
+from typing import Literal, TypedDict, Union
 
 
 DEFAULT_MJCF_REVISION = "main"
@@ -16,4 +16,4 @@ class HuggingFaceMjcfRef(TypedDict, total=False):
     revision: str
 
 
-MjcfReference: TypeAlias = str | Path | HuggingFaceMjcfRef
+MjcfReference = Union[str, Path, HuggingFaceMjcfRef]
