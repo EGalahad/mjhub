@@ -7,7 +7,7 @@ name = "mjhub"
 version = "0.1.0"
 description = "Shared MJCF reference resolution and scene-loading utilities for MuJoCo projects."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 dependencies = [
     "huggingface_hub>=0.30",
     "mujoco>=2.3.7",
