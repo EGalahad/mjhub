@@ -4,8 +4,8 @@
 
 It is intentionally small. The first version only owns four concerns:
 
-- declare MJCF references, including Hugging Face-backed assets
-- resolve an MJCF reference to a local XML path
+- declare asset references, including Hugging Face-backed assets
+- resolve an asset reference to a local path
 - patch a robot-only MJCF into a viewer/sim scene with a floor
 
 ## Why this package exists
@@ -24,9 +24,9 @@ shared home for the common logic.
 
 ```python
 from mjhub import (
-    HuggingFaceMjcfRef,
-    MjcfReference,
-    resolve_mjcf_reference,
+    AssetReference,
+    HuggingFaceAssetRef,
+    resolve_asset_reference,
     temp_mjcf_with_floor,
 )
 ```
@@ -34,11 +34,11 @@ from mjhub import (
 ### Example
 
 ```python
-from mjhub import resolve_mjcf_reference
+from mjhub import resolve_asset_reference
 
-mjcf = "hf://elijahgalahad/g1_xmls@main/g1-mjlab.xml"
+asset = "hf://elijahgalahad/g1_xmls@main/g1-mjlab.xml"
 
-mjcf_path = resolve_mjcf_reference(mjcf)
+asset_path = resolve_asset_reference(asset)
 ```
 
 You can also pass a compact string reference directly:
@@ -50,16 +50,19 @@ with temp_mjcf_with_floor("path/to/robot.xml") as scene_mjcf_path:
     ...
 ```
 
-`MjcfReference` intentionally accepts either:
+`AssetReference` intentionally accepts either:
 
 - a local filesystem path
 - a `hf://<namespace>/<repo>@<revision>/<path>` string
-- a `HuggingFaceMjcfRef` typed dict
+- a `HuggingFaceAssetRef` typed dict
+
+`resolve_mjcf_reference(...)` remains available as a backward-compatible alias
+for callers that still want the old MJCF-specific name.
 
 ## Initial migration targets
 
 - `any4hdmi.format.build_hf_mjcf_reference`
-- `any4hdmi.format.resolve_mjcf_reference`
+- `any4hdmi.format.resolve_asset_reference`
 - `sim2real.utils.mjcf.*`
 - `sim2real.teleop.mujoco_viewer_utils.*`
 - `active-adaptation.projects.hdmi.hdmi.tasks.motion._resolve_any4hdmi_mjcf_path`

@@ -5,19 +5,19 @@ from pathlib import Path
 from huggingface_hub import snapshot_download
 
 from mjhub.types import (
-    DEFAULT_MJCF_REVISION,
-    HF_MJCF_URI_SCHEME,
-    HuggingFaceMjcfRef,
-    MjcfReference,
+    AssetReference,
+    DEFAULT_ASSET_REVISION,
+    HF_ASSET_URI_SCHEME,
+    HuggingFaceAssetRef,
 )
 
 
-def _build_hf_mjcf_reference(
+def _build_hf_asset_reference(
     *,
     repo_id: str,
     path: str,
-    revision: str = DEFAULT_MJCF_REVISION,
-) -> HuggingFaceMjcfRef:
+    revision: str = DEFAULT_ASSET_REVISION,
+) -> HuggingFaceAssetRef:
     return {
         "kind": "huggingface",
         "repo_id": repo_id,
@@ -26,19 +26,19 @@ def _build_hf_mjcf_reference(
     }
 
 
-def _parse_mjcf_reference(mjcf: MjcfReference) -> MjcfReference:
-    if isinstance(mjcf, dict):
-        return mjcf
+def _parse_asset_reference(reference: AssetReference) -> AssetReference:
+    if isinstance(reference, dict):
+        return reference
 
-    mjcf_str = str(mjcf)
-    if not mjcf_str.startswith(HF_MJCF_URI_SCHEME):
-        return mjcf
+    reference_str = str(reference)
+    if not reference_str.startswith(HF_ASSET_URI_SCHEME):
+        return reference
 
-    raw_reference = mjcf_str[len(HF_MJCF_URI_SCHEME) :]
+    raw_reference = reference_str[len(HF_ASSET_URI_SCHEME) :]
     parts = raw_reference.split("/", 2)
     if len(parts) < 3:
         raise ValueError(
-            "Invalid Hugging Face MJCF URI. Expected "
+            "Invalid Hugging Face asset URI. Expected "
             "'hf://<namespace>/<repo>/<path>' or "
             "'hf://<namespace>/<repo>@<revision>/<path>'."
         )
@@ -49,14 +49,14 @@ def _parse_mjcf_reference(mjcf: MjcfReference) -> MjcfReference:
     repo_name, sep, revision = repo_and_revision.partition("@")
     repo_id = f"{namespace}/{repo_name}"
     if not sep:
-        revision = DEFAULT_MJCF_REVISION
+        revision = DEFAULT_ASSET_REVISION
 
     if not repo_id or not repo_path:
         raise ValueError(
-            "Invalid Hugging Face MJCF URI. repo_id and path must both be non-empty."
+            "Invalid Hugging Face asset URI. repo_id and path must both be non-empty."
         )
 
-    return _build_hf_mjcf_reference(
+    return _build_hf_asset_reference(
         repo_id=repo_id,
         path=repo_path,
         revision=revision,
@@ -68,40 +68,48 @@ def _resolve_hf_snapshot_path(*, repo_id: str, path: str, revision: str) -> Path
     resolved_path = snapshot_root / path
     if not resolved_path.is_file():
         raise FileNotFoundError(
-            f"MJCF path {path!r} was not found in Hugging Face repo "
+            f"Asset path {path!r} was not found in Hugging Face repo "
             f"{repo_id!r} at revision {revision!r}"
         )
     return resolved_path
 
 
-def _resolve_huggingface_mjcf(reference: HuggingFaceMjcfRef) -> Path:
+def _resolve_huggingface_asset(reference: HuggingFaceAssetRef) -> Path:
     return _resolve_hf_snapshot_path(
         repo_id=str(reference["repo_id"]),
         path=str(reference["path"]),
-        revision=str(reference.get("revision", DEFAULT_MJCF_REVISION)),
+        revision=str(reference.get("revision", DEFAULT_ASSET_REVISION)),
     )
 
 
-def resolve_mjcf_reference(
-    mjcf: MjcfReference,
+def resolve_asset_reference(
+    reference: AssetReference,
     *,
     local_root: str | Path | None = None,
 ) -> Path:
-    mjcf = _parse_mjcf_reference(mjcf)
+    reference = _parse_asset_reference(reference)
 
-    if isinstance(mjcf, dict):
-        if mjcf.get("kind") != "huggingface":
-            raise ValueError(f"Unsupported MJCF reference kind: {mjcf.get('kind')!r}")
-        return _resolve_huggingface_mjcf(mjcf)
+    if isinstance(reference, dict):
+        if reference.get("kind") != "huggingface":
+            raise ValueError(f"Unsupported asset reference kind: {reference.get('kind')!r}")
+        return _resolve_huggingface_asset(reference)
 
-    mjcf_path = Path(mjcf).expanduser()
-    if not mjcf_path.is_absolute():
+    asset_path = Path(reference).expanduser()
+    if not asset_path.is_absolute():
         if local_root is not None:
-            mjcf_path = Path(local_root).expanduser().resolve() / mjcf_path
-        mjcf_path = mjcf_path.absolute()
+            asset_path = Path(local_root).expanduser().resolve() / asset_path
+        asset_path = asset_path.absolute()
     else:
-        mjcf_path = mjcf_path.absolute()
+        asset_path = asset_path.absolute()
 
-    if not mjcf_path.is_file():
-        raise FileNotFoundError(f"MJCF not found: {mjcf_path}")
-    return mjcf_path
+    if not asset_path.is_file():
+        raise FileNotFoundError(f"Asset not found: {asset_path}")
+    return asset_path
+
+
+def resolve_mjcf_reference(
+    mjcf: AssetReference,
+    *,
+    local_root: str | Path | None = None,
+) -> Path:
+    return resolve_asset_reference(mjcf, local_root=local_root)
