@@ -111,6 +111,6 @@ def resolve_asset_reference(
 def resolve_mjcf_reference(
     mjcf: AssetReference,
     *,
-    local_root: str | Path | None = None,
+    local_root: Optional[Union[str, Path]] = None,
 ) -> Path:
     return resolve_asset_reference(mjcf, local_root=local_root)
