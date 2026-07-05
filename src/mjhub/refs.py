@@ -71,6 +71,7 @@ def _resolve_hf_snapshot_path(*, repo_id: str, path: str, revision: str) -> Path
             f"Asset path {path!r} was not found in Hugging Face repo "
             f"{repo_id!r} at revision {revision!r}"
         )
+    print(f"Resolved hf:// path: {resolved_path}", flush=True)
     return resolved_path
 
 
